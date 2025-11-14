@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introva - Minecraft & Web Developer</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load lucide-react icons (used via CDN for simple SVGs) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Configure Tailwind for the dark theme and custom purple -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0f0f1a',
+                        'card-bg': '#1a1a2e',
+                        'accent-purple': '#8B5CF6', // A vibrant purple
+                        'light-text': '#E5E7EB',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(139, 92, 246, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for the floating effect, animations, and typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent body scroll due to canvas */
+        }
+        
+        /* Floating effect for the main card - kept for existing aesthetic */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2); }
+            50% { transform: translateY(-10px) rotate(0.5deg); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4); }
+            100% { transform: translateY(0px) rotate(0deg); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2); }
+        }
+
+        /* Loading Bar Animation */
+        .skill-bar {
+            width: 0;
+            transition: width 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); /* Smoother transition */
+        }
+        
+        /* Custom scrollbar for the content box */
+        #main-content {
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #8B5CF6 #1a1a2e; /* Thumb and track */
+        }
+        #main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        #main-content::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 10px;
+        }
+        #main-content::-webkit-scrollbar-thumb {
+            background-color: #8B5CF6;
+            border-radius: 10px;
+            border: 2px solid #1a1a2e;
+        }
+
+        /* Particle Canvas Styling */
+        #particle-canvas {
+            background-color: #0f0f1a; /* Dark background */
+        }
+
+        /* Home Page Centering */
+        .home-content-wrapper {
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Custom Staggered Animation for Home Text --- */
+        @keyframes intro-slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Base class for all three lines */
+        .intro-text-line {
+            animation: intro-slide-up 0.8s ease-out forwards;
+            opacity: 0; /* Start invisible */
+        }
+        /* Staggering using custom delays (0.5s start, then 1s delay each) */
+        .delay-1 { animation-delay: 0.5s; } 
+        .delay-2 { animation-delay: 1.5s; }
+        .delay-3 { animation-delay: 2.5s; }
+        
+        /* Keyframe for simple pulsating animation on Home title */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .animate-pulse {
+            animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500">
+    
+    <!-- Animated Particle Background Canvas (Z-Index 0) -->
+    <canvas id="particle-canvas" class="fixed inset-0 z-0"></canvas>
+
+    <!-- Main Portfolio Card (Z-Index 10) -->
+    <!-- Added initial opacity and scale for the Opening Animation -->
+    <div id="portfolio-card" class="float-animation bg-card-bg w-full max-w-7xl h-[80vh] rounded-2xl p-0 flex flex-col md:flex-row shadow-3xl overflow-hidden transition-all duration-1000 relative z-10 opacity-0 scale-90">
+
+        <!-- Left Sidebar (Small Portion) -->
+        <div class="md:w-1/4 w-full bg-gray-900 flex flex-col items-center p-6 md:p-8 border-b-2 md:border-b-0 md:border-r-2 border-accent-purple/50">
+            
+            <!-- DP / Picture Placeholder -->
+            <!-- DP / Picture Placeholder -->
+            <!-- The outer div keeps the rounded shape, border, and hover effect -->
+            <div class="w-28 h-28 md:w-36 md:h-36 bg-accent-purple/30 rounded-full flex items-center justify-center border-4 border-accent-purple mb-4 shadow-lg transform hover:scale-105 transition-transform duration-300 overflow-hidden">
+                <!-- *** YOUR IMAGE GOES HERE *** -->
+                <img src="https://media.discordapp.net/attachments/1426233547722719266/1434074577562239029/1761980400332.jpg?ex=6916d387&is=69158207&hm=b09eef764d6517764d19a3302459647b54ce7688811332b652bb983d6e819c6d&=&format=webp&width=670&height=656" 
+                     alt="Profile Picture of Introva"
+                     class="w-full h-full object-cover">
+                <!-- To use your picture, replace the URL above with your image link -->
+            </div>
+            
+            <h1 class="text-3xl font-extrabold mb-1 text-white text-center">Introva</h1>
+            <p class="text-md text-gray-400 mb-6 text-center">Developer & Server Manager</p>
+
+            <!-- Social Links -->
+            <div class="flex space-x-4 mb-8">
+                <!-- DISCORD LINK UPDATED -->
+                <a href="https://discord.com/app" target="_blank" class="w-10 h-10 bg-accent-purple hover:bg-purple-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl" title="Discord">
+                    <!-- Discord Logo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-more"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/></svg>
+                </a>
+                <!-- YOUTUBE LINK UPDATED -->
+                <a href="https://www.youtube.com/@introva-c4k" target="_blank" class="w-10 h-10 bg-accent-purple hover:bg-purple-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl" title="YouTube">
+                    <!-- YouTube Logo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube"><path d="M2.5 17a24.1 24.1 0 0 1 20 0"/><path d="M18.9 14.1a1.2 1.2 0 0 0 .3.8c.4.3.8.3 1.2.3.8 0 1.2-.5 1.6-.9.4-.4.5-1.4.3-2-.2-.6-.7-1-1.3-1.4-.6-.4-1-.5-1.6-.5-.8 0-1.2.5-1.6.9-.4.4-.5 1.4-.3 2z"/><path d="M10.1 7.4a1.2 1.2 0 0 0-.3-.8c-.4-.3-.8-.3-1.2-.3-.8 0-1.2.5-1.6.9-.4.4-.5 1.4-.3 2s.7 1 1.3 1.4c.6.4 1 .5 1.6.5.8 0 1.2-.5 1.6-.9.4-.4.5-1.4.3-2z"/></svg>
+                </a>
+                <!-- INSTAGRAM LINK UPDATED -->
+                <a href="https://www.instagram.com/abdulqayyam76/#" target="_blank" class="w-10 h-10 bg-accent-purple hover:bg-purple-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl" title="Instagram">
+                    <!-- Instagram Logo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 3h.01"/><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+                </a>
+            </div>
+
+            <!-- Discord Button (Converted from static text) -->
+            <div class="mt-auto w-full">
+                <!-- DISCORD BUTTON LINK UPDATED -->
+                <a href="https://discord.com/app" target="_blank" class="block text-sm text-center bg-accent-purple hover:bg-purple-700 text-white font-bold py-3 px-2 rounded-lg mb-4 shadow-xl transition-all duration-300 transform hover:scale-[1.05] focus:ring-4 focus:ring-accent-purple/50">
+                    <span class="font-bold">Discord:</span> epicintrova
+                </a>
+                <p class="text-xs text-center text-gray-500">© 2025 All rights reserved.</p>
+            </div>
+        </div>
+
+        <!-- Right Content Screen (Big Portion) -->
+        <div id="main-content" class="md:w-3/4 w-full p-6 md:p-10 overflow-y-auto transition-opacity duration-500">
+            <!-- Content will be injected here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Navigation Buttons (Bottom) -->
+    <div class="mt-6 flex flex-wrap justify-center gap-4 p-4 relative z-10">
+        <button onclick="showSection('home', this)" class="nav-button bg-accent-purple hover:bg-purple-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-accent-purple/50">
+            Home
+        </button>
+        <button onclick="showSection('about', this)" class="nav-button bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gray-500/50">
+            About Me
+        </button>
+        <button onclick="showSection('skills', this)" class="nav-button bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gray-500/50">
+            Skills
+        </button>
+        <button onclick="showSection('portfolio', this)" class="nav-button bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gray-500/50">
+            Portfolio
+        </button>
+    </div>
+
+    <script>
+        const contentDiv = document.getElementById('main-content');
+        const navButtons = document.querySelectorAll('.nav-button');
+        const portfolioCard = document.getElementById('portfolio-card');
+
+        // Data for the Skills section loading bars
+        const skillData = [
+            { name: "Web Design", percent: 100, color: 'bg-green-500' },
+            { name: "Plugin Development", percent: 90, color: 'bg-accent-purple' },
+            { name: "Server Management", percent: 95, color: 'bg-yellow-500' },
+            { name: "Discord Bot Development", percent: 80, color: 'bg-red-500' },
+        ];
+
+        // Function to create the HTML for a skill bar
+        function createSkillBar(name, percent, color) {
+            return `
+                <div class="mb-6">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-lg font-medium">${name}</span>
+                        <span class="text-lg font-bold text-accent-purple">${percent}%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-3 shadow-inner">
+                        <div class="skill-bar h-3 rounded-full ${color}" data-percent="${percent}"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- SECTION CONTENT DEFINITIONS (UPDATED) ---
+
+        const content = {
+            home: `
+                <div class="home-content-wrapper">
+                    <h2 class="text-6xl md:text-8xl font-black text-white mb-4 animate-pulse">
+                        INTROVA
+                    </h2>
+                    <!-- Applied custom animation classes for staggered reveal -->
+                    <div class="text-xl md:text-3xl font-light text-gray-400 space-y-2 text-center">
+                        <p class="intro-text-line delay-1">Minecraft Server & Plugin Dev</p>
+                        <p class="intro-text-line delay-2">Discord Bot Developer</p>
+                        <p class="intro-text-line delay-3">Web Developer</p>
+                    </div>
+                </div>
+            `,
+            about: `
+                <h2 class="text-4xl font-extrabold text-accent-purple mb-6 border-b-2 border-gray-700 pb-2 animate-in fade-in slide-in-from-top-4 duration-500">About Me</h2>
+                
+                <p class="text-lg mb-6 leading-relaxed animate-in fade-in duration-700 delay-100">
+                    Hi there! I am <span class="font-bold text-white">INTROVA</span>, a professional <span class="text-accent-purple font-semibold">Minecraft plugin and server developer</span>. In the past, I have developed <span class="font-bold">100+ Minecraft servers</span> and currently work on 3+ active servers. I have also created 7-8 custom Minecraft plugins and have over 3.7 years of experience in Minecraft development.
+                </p>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-center mb-8 animate-in fade-in duration-700 delay-200">
+                    <div class="p-3 bg-gray-700 rounded-lg shadow-md hover:scale-[1.02] transition-transform"><span class="block font-bold">Age:</span> 18</div>
+                    <div class="p-3 bg-gray-700 rounded-lg shadow-md hover:scale-[1.02] transition-transform"><span class="block font-bold">Residence:</span> Pakistan</div>
+                    <div class="p-3 bg-gray-700 rounded-lg shadow-md hover:scale-[1.02] transition-transform"><span class="block font-bold">Discord:</span> epicintrova</div>
+                </div>
+
+                <h3 class="text-3xl font-bold text-white mb-4 mt-6 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-300">What I Do</h3>
+                
+                <div class="space-y-6 animate-in fade-in duration-700 delay-400">
+                    <!-- Minecraft Server Development -->
+                    <div class="p-4 bg-gray-700/50 rounded-xl shadow-inner border border-gray-800 hover:border-accent-purple/50 transition-colors">
+                        <h4 class="text-xl font-semibold text-accent-purple mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a1 1 0 0 0 1-1V5a1 1 0 0 0-2 0v15a1 1 0 0 0 1 1zM2 12a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/></svg>
+                            Minecraft Server Development
+                        </h4>
+                        <p class="mb-3">I develop professional Minecraft servers like:</p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="tag">Lifesteal</span><span class="tag">Survival</span><span class="tag">PvP / FFA</span><span class="tag">BedWars</span><span class="tag">BoxPVP</span><span class="tag">Hub / Lobby</span><span class="tag">Factions</span><span class="tag">OneBlock</span><span class="tag">And Many More...</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            skills: `
+                <h2 class="text-4xl font-extrabold text-accent-purple mb-6 border-b-2 border-gray-700 pb-2 animate-in fade-in slide-in-from-top-4 duration-500">Skills & Experience</h2>
+                
+                <h3 class="text-2xl font-bold text-white mb-4 mt-6 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-100">Skill Proficiency</h3>
+                <div id="skill-bars" class="space-y-4 mb-10 animate-in fade-in duration-700 delay-200">
+                    <!-- Skill bars will be injected here -->
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-4 mt-8 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-300">Experience</h3>
+                <ol class="relative border-l border-gray-700 ml-4 space-y-8 animate-in fade-in duration-700 delay-400">
+                    <!-- Experience Item 1 -->
+                    <li class="mb-10 ml-6 hover:bg-card-bg/50 p-3 rounded-lg transition-colors">
+                        <span class="absolute flex items-center justify-center w-6 h-6 bg-accent-purple/50 rounded-full -left-3 ring-8 ring-card-bg">
+                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                        </span>
+                        <h4 class="flex items-center mb-1 text-xl font-semibold text-white">Minecraft Server Development</h4>
+                        <time class="block mb-2 text-sm font-normal leading-none text-gray-500">2021 - Current</time>
+                        <p class="text-base font-normal text-gray-400">Designed and managed 100+ Minecraft servers with optimized performance. Developed custom game modes such as Lifesteal, Factions, BedWars, and OneBlock. Handled giveaways, keyalls, pinatas, and server growth strategies.</p>
+                    </li>
+                    <!-- Experience Item 2 -->
+                    <li class="mb-10 ml-6 hover:bg-card-bg/50 p-3 rounded-lg transition-colors">
+                        <span class="absolute flex items-center justify-center w-6 h-6 bg-accent-purple/50 rounded-full -left-3 ring-8 ring-card-bg">
+                             <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                        </span>
+                        <h4 class="text-xl font-semibold text-white">Minecraft Plugin Development</h4>
+                        <time class="block mb-2 text-sm font-normal leading-none text-gray-500">2024 - Current</time>
+                        <p class="text-base font-normal text-gray-400">Developed 7-8 private custom plugins with unique gameplay mechanics. Implemented plugin licensing systems, security features, and database integration. Optimized plugins for 1.20.1 - 1.21.4 with high performance and low resource usage.</p>
+                    </li>
+                </ol>
+
+                <h3 class="text-2xl font-bold text-white mb-4 mt-8 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-500">Expertise & Knowledge</h3>
+                <div class="flex flex-wrap gap-3 animate-in fade-in duration-700 delay-600">
+                    <span class="tag-knowledge">Minecraft Server Optimization</span>
+                    <span class="tag-knowledge">Custom Gamemode Development</span>
+                    <span class="tag-knowledge">Server Security & Anti-Cheat Systems</span>
+                    <span class="tag-knowledge">Performance Optimization</span>
+                    <span class="tag-knowledge">Community Growth & Engagement</span>
+                    <span class="tag-knowledge">Plugin Licensing & DRM Protection</span>
+                    <span class="tag-knowledge">Content Creation</span>
+                    <span class="tag-knowledge">And Many More...</span>
+                </div>
+            `,
+            portfolio: `
+                <h2 class="text-4xl font-extrabold text-accent-purple mb-6 border-b-2 border-gray-700 pb-2 animate-in fade-in slide-in-from-top-4 duration-500">My Work Portfolio</h2>
+                
+                <h3 class="text-2xl font-bold text-white mb-4 mt-6 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-100">Minecraft Servers Developed</h3>
+                <div class="flex flex-wrap gap-2 mb-8 animate-in fade-in duration-700 delay-200">
+                    <span class="tag-portfolio bg-purple-600/50 hover:bg-purple-600">Blex Network</span>
+                    <span class="tag-portfolio bg-purple-600/50 hover:bg-purple-600">AntMC</span>
+                    <span class="tag-portfolio bg-purple-600/50 hover:bg-purple-600">TitanMC</span>
+                    <span class="tag-portfolio bg-purple-600/50 hover:bg-purple-600">Hex Network</span>
+                    <span class="tag-portfolio bg-purple-600/50 hover:bg-purple-600">HyperMC</span>
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-4 mt-6 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-300">Discord Bot Projects</h3>
+                <p class="text-gray-400 mb-4">I've created many powerful Discord bots, including:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2 mb-8 animate-in fade-in duration-700 delay-400">
+                    <li class="hover:text-accent-purple transition-colors"><span class="font-semibold text-white">Music Bots:</span> High-quality, low-latency audio streaming solutions.</li>
+                    <li class="hover:text-accent-purple transition-colors"><span class="font-semibold text-white">Security Bots:</span> Advanced moderation and anti-spam systems.</li>
+                    <li class="hover:text-accent-purple transition-colors"><span class="font-semibold text-white">Management Bots:</span> Automation tools for server administration and staff communication.</li>
+                    <li class="hover:text-accent-purple transition-colors"><span class="font-semibold text-white">And many more...</span> focused on enhancing community engagement.</li>
+                </ul>
+
+                <h3 class="text-2xl font-bold text-white mb-4 mt-6 border-l-4 border-accent-purple pl-3 animate-in fade-in duration-700 delay-500">Custom Plugins & Web Development</h3>
+                <p class="text-gray-400 mb-4">My private plugin work focuses on custom gameplay and mechanics:</p>
+                <div class="flex flex-wrap gap-2 mb-8 animate-in fade-in duration-700 delay-600">
+                    <span class="tag-portfolio bg-green-600/50 hover:bg-green-600">Custom Swords Plugin</span>
+                    <span class="tag-portfolio bg-green-600/50 hover:bg-green-600">Custom Heros Plugin</span>
+                    <span class="tag-portfolio bg-yellow-600/50 hover:bg-yellow-600">Mind-Blowing Websites (Various Projects)</span>
+                </div>
+            `,
+        };
+
+        // Reusable tag styles
+        const tagStyles = `
+            .tag { @apply bg-accent-purple/30 text-accent-purple text-sm font-medium px-3 py-1 rounded-full shadow-md transition-colors hover:bg-accent-purple/50 hover:text-white; }
+            .tag-knowledge { @apply bg-gray-700 text-gray-300 text-sm font-medium px-3 py-1 rounded-lg border border-accent-purple/50 shadow-inner transition-colors hover:border-white/50; }
+            .tag-portfolio { @apply text-white text-md font-medium px-4 py-2 rounded-xl shadow-lg transform hover:scale-[1.05] transition-transform duration-200 cursor-pointer; }
+        `;
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText += tagStyles;
+        document.head.appendChild(styleSheet);
+
+
+        // --- PARTICLE BACKGROUND LOGIC ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const maxParticles = 80;
+        const particleColor = 'rgba(139, 92, 246, 0.5)'; // Accent purple with transparency
+        const linkColor = 'rgba(139, 92, 246, 0.1)';
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Loop particles around the screen
+                if (this.x > canvas.width || this.x < 0) this.x = this.x > canvas.width ? 0 : canvas.width;
+                if (this.y > canvas.height || this.y < 0) this.y = this.y > canvas.height ? 0 : canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = particleColor;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+        }
+
+        function handleParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) { // Link particles within 100px
+                        ctx.strokeStyle = linkColor;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', initParticles);
+        
+        // --- MAIN LOGIC ---
+
+        function showSection(sectionName, clickedButton) {
+            // 1. Update Content (with fading effect)
+            contentDiv.style.opacity = '0'; // Start fade out
+            
+            setTimeout(() => {
+                contentDiv.innerHTML = content[sectionName];
+                contentDiv.scrollTop = 0;
+                contentDiv.style.opacity = '1'; // Fade in new content
+
+                // 2. Handle Skill Bars after injection (only for skills section)
+                if (sectionName === 'skills') {
+                    renderSkillBars();
+                }
+
+            }, 300); // Wait for fade out animation
+
+            // 3. Update Active Button Style
+            navButtons.forEach(btn => {
+                btn.classList.remove('bg-accent-purple', 'hover:bg-purple-600');
+                btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                btn.classList.remove('ring-accent-purple/50');
+                btn.classList.add('ring-gray-500/50');
+            });
+
+            if (clickedButton) {
+                clickedButton.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                clickedButton.classList.add('bg-accent-purple', 'hover:bg-purple-600');
+                clickedButton.classList.remove('ring-gray-500/50');
+                clickedButton.classList.add('ring-accent-purple/50');
+            }
+        }
+
+        function renderSkillBars() {
+            const skillBarsContainer = document.getElementById('skill-bars');
+            if (!skillBarsContainer) return;
+
+            // Generate HTML for all skill bars
+            let skillBarsHtml = '';
+            skillData.forEach(skill => {
+                skillBarsHtml += createSkillBar(skill.name, skill.percent, skill.color);
+            });
+            skillBarsContainer.innerHTML = skillBarsHtml;
+            
+            // Animate the skill bars
+            // We use setTimeout to ensure the HTML is painted before we try to animate it
+            setTimeout(() => {
+                document.querySelectorAll('.skill-bar').forEach(bar => {
+                    const percent = bar.getAttribute('data-percent');
+                    // Force a layout recalculation for smooth animation
+                    void bar.offsetWidth; 
+                    bar.style.width = `${percent}%`;
+                });
+            }, 50); 
+        }
+
+        // Initialize the page on load
+        window.onload = function() {
+            // 1. Start Particle Background Animation
+            initParticles();
+            animateParticles();
+
+            // 2. Trigger Opening Animation for the main card
+            // Remove initial opacity-0 and scale-90 classes after a brief delay
+            setTimeout(() => {
+                portfolioCard.classList.remove('opacity-0', 'scale-90');
+                // The transition classes (duration-1000) handle the smooth animation
+            }, 100); 
+
+            // 3. Initialize content
+            // Find the Home button and simulate a click
+            const homeButton = document.querySelector('.nav-button'); 
+            showSection('home', homeButton);
+        };
+
+    </script>
+</body>
+</html>
